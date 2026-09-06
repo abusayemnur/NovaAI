@@ -1,11 +1,28 @@
-const API_URL = "http://127.0.0.1:8000";
+const API_URL = "http://localhost:8000";
 
-export async function askAI(prompt) {
-  const res = await fetch(
-    `${API_URL}/ask?prompt=${encodeURIComponent(prompt)}`
-  );
+export async function askAI(prompt, signal) {
+  const url = `${API_URL}/ask?prompt=${encodeURIComponent(prompt)}`;
 
-  const data = await res.json();
+  console.log("Request URL:", url);
 
-  return data.reply || "No response.";
+  const response = await fetch(url, {
+    method: "GET",
+    signal,
+  });
+
+  console.log("Response status:", response.status);
+
+  if (!response.ok) {
+    throw new Error(`Server error: ${response.status}`);
+  }
+
+  const data = await response.json();
+
+  console.log("Response data:", data);
+
+  if (!data.reply) {
+    throw new Error("AI response not found");
+  }
+
+  return data.reply;
 }

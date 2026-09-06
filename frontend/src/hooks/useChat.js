@@ -1,49 +1,57 @@
 import { useState } from "react";
 import { askAI } from "../services/api";
 
-export default function useChat() {
+function useChat() {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const sendMessage = async (prompt) => {
-    if (!prompt.trim()) return;
+    if (!prompt || !prompt.trim() || loading) return;
 
-    setMessages((prev) => [
-      ...prev,
-      {
-        role: "user",
-        text: prompt,
-      },
-    ]);
+    const userMessage = {
+      role: "user",
+      content: prompt.trim(),
+    };
+
+    // সাথে সাথে User message দেখাবে
+    setMessages((prev) => [...prev, userMessage]);
 
     setLoading(true);
 
     try {
-      const reply = await askAI(prompt);
+      const reply = await askAI(prompt.trim());
 
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          text: reply,
-        },
-      ]);
+      const aiMessage = {
+        role: "assistant",
+        content: reply,
+      };
+
+      setMessages((prev) => [...prev, aiMessage]);
     } catch (error) {
+      console.error("Nova AI Error:", error);
+
       setMessages((prev) => [
         ...prev,
         {
           role: "assistant",
-          text: "❌ Failed to connect to AI.",
+          content: `❌ ${error.message || "Something went wrong."}`,
         },
       ]);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    setLoading(false);
+  const newChat = () => {
+    setMessages([]);
   };
 
   return {
     messages,
     loading,
     sendMessage,
+    newChat,
   };
 }
+
+export default useChat;

@@ -1,57 +1,119 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { Send, Square } from "lucide-react";
 
-function InputBox({ onSend, loading }) {
+function InputBox({ onSend, loading, onStop }) {
   const [prompt, setPrompt] = useState("");
+  const textareaRef = useRef(null);
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!prompt.trim()) return;
+    if (!prompt.trim() || loading) return;
 
-    onSend(prompt);
+    onSend(prompt.trim());
     setPrompt("");
+
+    // Textarea height reset
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    // Enter = Send
+    // Shift + Enter = New Line
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+
+      if (!loading && prompt.trim()) {
+        handleSubmit(e);
+      }
+    }
+  };
+
+  const handleChange = (e) => {
+    setPrompt(e.target.value);
+
+    // Auto resize
+    const textarea = e.target;
+
+    textarea.style.height = "auto";
+
+    textarea.style.height =
+      Math.min(textarea.scrollHeight, 160) + "px";
   };
 
   return (
     <form
       onSubmit={handleSubmit}
-      style={{
-        display: "flex",
-        gap: "10px",
-        padding: "15px",
-      }}
+      className="flex items-end gap-2
+                 bg-slate-800
+                 border border-slate-700
+                 rounded-2xl
+                 p-2
+                 shadow-lg"
     >
-      <input
-        type="text"
-        placeholder="Ask Nova AI..."
+      {/* Textarea */}
+      <textarea
+        ref={textareaRef}
         value={prompt}
-        onChange={(e) => setPrompt(e.target.value)}
+        onChange={handleChange}
+        onKeyDown={handleKeyDown}
         disabled={loading}
-        style={{
-          flex: 1,
-          padding: "12px",
-          borderRadius: "10px",
-          border: "1px solid #555",
-          background: "#1f1f1f",
-          color: "#fff",
-          outline: "none",
-        }}
+        rows={1}
+        placeholder={
+          loading
+            ? "Nova AI is thinking..."
+            : "Message Nova AI..."
+        }
+        className="flex-1
+                   resize-none
+                   bg-transparent
+                   text-white
+                   placeholder-slate-500
+                   outline-none
+                   px-3 py-3
+                   text-sm md:text-base
+                   max-h-40
+                   overflow-y-auto"
       />
 
-      <button
-        type="submit"
-        disabled={loading}
-        style={{
-          padding: "12px 20px",
-          border: "none",
-          borderRadius: "10px",
-          background: "#2563eb",
-          color: "#fff",
-          cursor: "pointer",
-        }}
-      >
-        {loading ? "..." : "Send"}
-      </button>
+      {/* Button */}
+      {loading ? (
+        <button
+          type="button"
+          onClick={onStop}
+          className="flex-shrink-0
+                     w-11 h-11
+                     flex items-center justify-center
+                     rounded-xl
+                     bg-red-600
+                     hover:bg-red-700
+                     text-white
+                     transition"
+          title="Stop generating"
+        >
+          <Square size={18} fill="currentColor" />
+        </button>
+      ) : (
+        <button
+          type="submit"
+          disabled={!prompt.trim()}
+          className="flex-shrink-0
+                     w-11 h-11
+                     flex items-center justify-center
+                     rounded-xl
+                     bg-blue-600
+                     hover:bg-blue-700
+                     disabled:bg-slate-700
+                     disabled:text-slate-500
+                     text-white
+                     transition"
+          title="Send message"
+        >
+          <Send size={18} />
+        </button>
+      )}
     </form>
   );
 }
