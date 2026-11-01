@@ -1,16 +1,20 @@
 const API_URL = "http://localhost:8000";
 
-export async function askAI(prompt, signal) {
-  const url = `${API_URL}/ask?prompt=${encodeURIComponent(prompt)}`;
+export async function askAI(messagesHistory, signal) {
+  const url = `${API_URL}/ask`;
 
-  console.log("Request URL:", url);
+  console.log("Sending Chat History to Backend:", messagesHistory);
 
   const response = await fetch(url, {
-    method: "GET",
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      messages: messagesHistory,
+    }),
     signal,
   });
-
-  console.log("Response status:", response.status);
 
   if (!response.ok) {
     throw new Error(`Server error: ${response.status}`);
@@ -18,11 +22,19 @@ export async function askAI(prompt, signal) {
 
   const data = await response.json();
 
-  console.log("Response data:", data);
+  if (!data.success || !data.answer) {
+    let errorMsg = "AI response not found";
+    
+    if (data.error) {
+      if (typeof data.error === "string") {
+        errorMsg = data.error;
+      } else if (typeof data.error === "object") {
+        errorMsg = data.error.message || JSON.stringify(data.error);
+      }
+    }
 
-  if (!data.reply) {
-    throw new Error("AI response not found");
+    throw new Error(errorMsg);
   }
 
-  return data.reply;
+  return data.answer;
 }
