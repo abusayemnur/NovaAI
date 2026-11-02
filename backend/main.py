@@ -71,8 +71,8 @@ def ask(request: ChatRequest):
             )
         }
 
-        # সিস্টেম প্রম্পট এবং ইউজারের পাঠানো হিস্ট্রি একত্র করা
-        formatted_messages = [system_prompt] + [msg.dict() for msg in request.messages]
+        # Pydantic v2 compatible model dump ব্যবহার করা হয়েছে
+        formatted_messages = [system_prompt] + [msg.model_dump() for msg in request.messages]
 
         # OpenRouter API Call
         response = requests.post(
@@ -80,11 +80,11 @@ def ask(request: ChatRequest):
             headers={
                 "Authorization": f"Bearer {api_key}",
                 "Content-Type": "application/json",
-                "HTTP-Referer": "http://localhost:5173",
+                "HTTP-Referer": "https://vercel.com",
                 "X-Title": "Nova AI"
             },
             json={
-                "model": "openai/gpt-4o-mini",  # নিশ্চিত এবং সচল মডেল
+                "model": "openai/gpt-4o-mini",
                 "messages": formatted_messages,
                 "max_tokens": 2048,
                 "temperature": 0.7
