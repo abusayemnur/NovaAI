@@ -7,7 +7,7 @@ Nova AI is a software-based AI personal assistant designed to provide conversati
 The project focuses on building a practical, accessible, and extensible AI assistant with a clean chat interface, backend API integration, and a foundation for future intelligent assistant capabilities.
 
 Project Links
-
+* Live Demo: https://nova-ai-nu-jade.vercel.app
 * GitHub Repository: https://github.com/abusayemnur/NovaAI
 * Developer LinkedIn: https://www.linkedin.com/in/abusayemnur/
 * AI Provider: OpenRouter
