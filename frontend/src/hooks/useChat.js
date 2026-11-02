@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { askAI } from "../services/api";
 
 function useChat() {
-  // লোকাল স্টোরেজ থেকে আগের চ্যাট লোড করা, না থাকলে খালি অ্যারে থাকবে
+  // Load chat history from localStorage, or default to an empty array
   const [messages, setMessages] = useState(() => {
     try {
       const savedMessages = localStorage.getItem("nova_chat_messages");
@@ -15,7 +15,7 @@ function useChat() {
 
   const [loading, setLoading] = useState(false);
 
-  // মেসেজ আপডেট হলেই সেটি লোকাল স্টোরেজে সেভ করা
+  // Save chat history to localStorage whenever messages change
   useEffect(() => {
     try {
       localStorage.setItem("nova_chat_messages", JSON.stringify(messages));
@@ -66,7 +66,8 @@ function useChat() {
   };
 
   const newChat = () => {
-    setMessages();
+    // Fixed: Passed an empty array to reset messages properly
+    setMessages([]); 
     try {
       localStorage.removeItem("nova_chat_messages");
     } catch (error) {
